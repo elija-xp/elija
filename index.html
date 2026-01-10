@@ -22,6 +22,7 @@
 
         /* Контент поверх тканини */
         .ui {
+            font-size: 16px;
             text-align: center;
             margin-top: 30vh;
             position: relative;
@@ -29,10 +30,11 @@
             pointer-events: none;
             /* Пропускає кліки на тканину */
             color: white;
-            padding: 50px;
+            padding: 50px 20px;
         }
 
         .ui button {
+            font-size: 16px;
             pointer-events: auto;
             /* Робить кнопку клікабельною */
             margin-top: 10px;
@@ -43,6 +45,22 @@
         .p {
             word-spacing: 20px;
         }
+
+        @media (max-width: 768px) {
+    .ui {
+        font-size: 30px; /* У 3 рази більше (16 * 3) */
+        padding: 40px;
+    }
+    .ui button {
+        font-size: 30px; /* Велику кнопку легше натиснути пальцем */
+        padding: 20px 40px;
+        border-radius: 15px;
+    }
+    .ui p {
+        font-size: 30px;
+    }
+}        
+
     </style>
 </head>
 
@@ -124,9 +142,24 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
+            // Перевірка на мобільний пристрій
+            const isMobile = window.innerWidth < 768;
+            // На мобілці відстань між точками 40, на десктопі 20
+            const currentSpacing = isMobile ? 25 : 20;
+            
+            // Збільшуємо радіус впливу для пальця, бо він менш точний за мишку
+            settings.mouseRadius = isMobile ? 50 : 40;
+            
+            // sdfghjgftderfrgthyjhygtfdersfrtghyjsdfghjgftderfrgthyjhygtfdersfrtghyj
+
+            const lengthMultiplier = isMobile ? 0.90 : 0.65;
+
+
+            settings.spacing = currentSpacing;
+
             // Динамічний розрахунок сітки
             cols = Math.floor(canvas.width / settings.spacing);
-            rows = Math.floor(canvas.height / settings.spacing * 0.65); // 60% висоти екрана
+            rows = Math.floor((canvas.height * lengthMultiplier) / settings.spacing); // 60% висоти екрана
 
             points = [];
             constraints = [];
@@ -160,6 +193,19 @@
             mouse.oldY = mouse.y;
             requestAnimationFrame(animate);
         }
+
+        window.addEventListener('touchstart', e => {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+                mouse.oldX = mouse.x;
+                mouse.oldY = mouse.y;
+            }, { passive: false });
+
+            window.addEventListener('touchmove', e => {
+                e.preventDefault(); // можна розкоментувати, щоб сторінка не скролилась, коли рухаєте тканину
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }, { passive: false });
 
         window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
         // Важливо: переініціалізація при зміні розміру вікна
