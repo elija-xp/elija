@@ -8,19 +8,31 @@
         body {
             margin: 0;
             overflow: hidden;
+            position: relative;
             background-color: #111;
             font-family: sans-serif;
-            background-image: url("grain-natural-noise-pain-technology-texture.jpg");
-            background-repeat: no-repeat;
-            
-            background-size: cover;
-            background-position: center top;
+        
         }
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
+
+        body::before {
+            position: fixed; /* Фіксуємо відносно вікна браузера */
+            top: 0;
+            left: 0;
+            width: 100vw;   /* 100% ширини вікна */
+            height: 100vh;  /* 100% висоти вікна */
+            background-image: url("grain-natural-noise-pain-technology-texture.jpg");
+            background-size: cover;        /* Розтягує картинку, щоб заповнити все */
+            background-position: center;   /* Центрує зображення */
+            background-repeat: no-repeat;
+            opacity: 0.3;
+            z-index: -1;
+            content: "";
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
         canvas {
             display: block;
             position: fixed;
@@ -31,7 +43,8 @@ html, body {
 
         /* Контент поверх тканини */
         .ui {
-            font-size: 16px;
+            margin-top: 50vh;
+            font-size: 32px;
             text-align: center;
             margin-top: 30vh;
             position: relative;
@@ -41,10 +54,10 @@ html, body {
             padding: 50px 20px;
         }
         .ui button {
-            font-size: 16px;
+            font-size: 32px;
             pointer-events: auto;
             margin-top: 10px;
-            padding: 10px 40px;
+            padding: 30px 50px;
             cursor: pointer;
             background-color: transparent;
             color: white;
@@ -94,7 +107,9 @@ html, body {
     <div class="ui">
         <h1>______elija______</h1>
         <p class="p">no longer quiet</p>
-        <button><a href="https://elija.bandcamp.com">_____wav_____</a></button>
+        <button><a href="https://elija.bandcamp.com">_____bc_____</a></button> <br>
+        <button><a href="https://soundcloud.com/eyelja">_____sc_____</a></button> <br>
+        <button><a href="https://open.spotify.com/artist/48EhvI7hn3mWZf7D96wURF?si=THgsfgYnTbip9eV4Owa3Xg&nd=1&dlsi=12304b1a89464b4b">___spotify___</a></button>
     </div>
 
     <canvas id="canvas"></canvas>
