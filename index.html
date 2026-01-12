@@ -10,6 +10,11 @@
             overflow: hidden;
             background-color: #111;
             font-family: sans-serif;
+            background-image: url("grain-natural-noise-pain-technology-texture.jpg");
+            background-repeat: no-repeat;
+            
+            background-size: cover;
+            background-position: center top;
         }
 
         canvas {
@@ -28,89 +33,65 @@
             position: relative;
             z-index: 2;
             pointer-events: none;
-            /* Пропускає кліки на тканину */
             color: white;
             padding: 50px 20px;
         }
 
         .ui button {
-    font-size: 16px;
-    pointer-events: auto;
-    margin-top: 10px;
-    padding: 10px 40px;
-    cursor: pointer;
-    
-    /* Прозора кнопка */
-    background-color: transparent;
-    color: white;
-    transition: background-color 0.3s ease; /* Плавний перехід */
-}
+            font-size: 16px;
+            pointer-events: auto;
+            margin-top: 10px;
+            padding: 10px 40px;
+            cursor: pointer;
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            transition: background-color 0.3s ease;
+        }
 
-.ui button:hover {
-    background-color: rgba(255, 255, 255, 0.2); /* 20% прозорості білого */
-}
+        .ui button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .ui button a {
+            color: white;
+            text-decoration: none;
+        }
 
         .p {
             word-spacing: 20px;
         }
 
-        .link-text {
-            color: white;
-        }
-
-        .link-text:visited {
-            color: white;
-        }
-        .bac-img {
-
-            background-image: url("grain-natural-noise-pain-technology-texture.jpg");
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-position: center top;
-
-
-            }
-        
         @media (max-width: 768px) {
             .ui {
                 font-size: 40px;
-                /* У 3 рази більше (16 * 3) */
                 padding: 30px;
             }
 
             .ui button {
                 font-size: 40px;
-                /* Велику кнопку легше натиснути пальцем */
                 padding: 20px 40px;
                 border-radius: 15px;
+                border: 3px solid white;
             }
 
             .ui p {
                 font-size: 60px;
             }
-
-            .bac-img {
-
-            background-image: url("grain-natural-noise-pain-technology-texture.jpg");
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-position: center top;
-
-
-            }
         }
     </style>
 </head>
 
-<body class="bac-img">
-<audio autoplay loop>
-    <source src="utro-2.mp3" type="audio/mpeg">
-    
-</audio>
+<body>
+    <!-- Аудіо елемент -->
+    <audio id="bgAudio" loop>
+        <source src="https://pub-721dd6323d024ce9b1c68373ead313d4.r2.dev/utro1.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="ui">
         <h1>______elija______</h1>
         <p class="p">no longer quiet</p>
-        <button><a class="link-text" href="https://elija.bandcamp.com">_____wav_____</a></button>
+        <button><a href="https://elija.bandcamp.com">_____wav_____</a></button>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -126,14 +107,13 @@
         const settings = {
             gravity: 0.0,
             friction: 0.82,
-            spacing: 13,      // Відстань між точками
-            tearDistance: 115, // Міцність
+            spacing: 13,
+            tearDistance: 115,
             stiffness: 1,
             mouseRadius: 30,
             mouseStrength: 0.6
         };
 
-        // Розраховуємо кількість стовпців та рядів залежно від екрана
         let cols, rows;
 
         class Point {
@@ -180,79 +160,61 @@
         }
 
         function init() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
 
-                const isMobile = window.innerWidth < 768;
+            const isMobile = window.innerWidth < 768;
 
-                // Налаштування відстані та радіусу миші
-                const currentSpacing = isMobile ? 35 : 25;
-                settings.spacing = currentSpacing;
-                settings.mouseRadius = isMobile ? 60 : 40;
+            const currentSpacing = isMobile ? 35 : 25;
+            settings.spacing = currentSpacing;
+            settings.mouseRadius = isMobile ? 60 : 40;
 
-                points = [];
-                constraints = [];
+            points = [];
+            constraints = [];
 
-                // Центр по горизонталі завжди посередині
-                const centerX = canvas.width / 2;
+            const centerX = canvas.width / 2;
+            const centerY = isMobile ? canvas.height * 0.35 : canvas.height * 0.5;
+            const rays = isMobile ? 20 : 26;
 
-            
-                // Якщо мобільний — піднімаємо на 35% висоти екрана, інакше — 50% (центр)
-                const centerY = isMobile ? canvas.height * 0.35 : canvas.height * 0.5;
+            const maxDist = Math.max(
+                centerY,
+                canvas.height - centerY,
+                centerX,
+                canvas.width - centerX
+            ) * 1.5;
+            const circles = Math.ceil(maxDist / settings.spacing);
 
-                // Кількість променів
-                const rays = isMobile ? 20 : 26;
+            const centerPoint = new Point(centerX, centerY, true);
+            points.push(centerPoint);
 
-                // Автоматичний розрахунок кількості кіл, щоб покрити весь екран
-                // (беремо найбільшу відстань від центру до кута екрана)
-                const maxDist = Math.max(
-                    centerY,
-                    canvas.height - centerY,
-                    centerX,
-                    canvas.width - centerX
-                ) * 1.5; // +50% запасу для натягу
-                const circles = Math.ceil(maxDist / settings.spacing);
-
-                // 1. Створюємо центральну точку (фіксована)
-                const centerPoint = new Point(centerX, centerY, true);
-                points.push(centerPoint);
-
-                // 2. Створюємо точки променями
-                for (let i = 1; i <= circles; i++) {
-                    let radius = i * settings.spacing;
-                    for (let j = 0; j < rays; j++) {
-                        let angle = (j / rays) * Math.PI * 2;
-                        let x = centerX + Math.cos(angle) * radius;
-                        let y = centerY + Math.sin(angle) * radius;
-
-                        // Закріплюємо тільки останнє коло (краї за межами екрана)
-                        let isOuterEdge = (i === circles);
-                        points.push(new Point(x, y, isOuterEdge));
-                    }
+            for (let i = 1; i <= circles; i++) {
+                let radius = i * settings.spacing;
+                for (let j = 0; j < rays; j++) {
+                    let angle = (j / rays) * Math.PI * 2;
+                    let x = centerX + Math.cos(angle) * radius;
+                    let y = centerY + Math.sin(angle) * radius;
+                    let isOuterEdge = (i === circles);
+                    points.push(new Point(x, y, isOuterEdge));
                 }
+            }
 
-                // 3. Створюємо зв'язки (Constraints)
-                for (let i = 1; i <= circles; i++) {
-                    for (let j = 0; j < rays; j++) {
-                        let currentIndex = 1 + (i - 1) * rays + j;
-                        let currentP = points[currentIndex];
+            for (let i = 1; i <= circles; i++) {
+                for (let j = 0; j < rays; j++) {
+                    let currentIndex = 1 + (i - 1) * rays + j;
+                    let currentP = points[currentIndex];
 
-                        // 1. З'єднуємо по колу (спіральні нитки)
-                        let nextInCircle = 1 + (i - 1) * rays + ((j + 1) % rays);
-                        constraints.push(new Constraint(currentP, points[nextInCircle]));
+                    let nextInCircle = 1 + (i - 1) * rays + ((j + 1) % rays);
+                    constraints.push(new Constraint(currentP, points[nextInCircle]));
 
-                        // 2. З'єднуємо радіально (промені)
-                        if (i === 1) {
-                            // Перше коло до центру
-                            constraints.push(new Constraint(currentP, centerPoint));
-                        } else {
-                            // Наступні кола до точок всередині
-                            let prevInRay = 1 + (i - 2) * rays + j;
-                            constraints.push(new Constraint(currentP, points[prevInRay]));
-                        }
+                    if (i === 1) {
+                        constraints.push(new Constraint(currentP, centerPoint));
+                    } else {
+                        let prevInRay = 1 + (i - 2) * rays + j;
+                        constraints.push(new Constraint(currentP, points[prevInRay]));
                     }
                 }
             }
+        }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -282,17 +244,37 @@
         }, { passive: false });
 
         window.addEventListener('touchmove', e => {
-            e.preventDefault(); // можна розкоментувати, щоб сторінка не скролилась, коли рухаєте тканину
+            e.preventDefault();
             mouse.x = e.touches[0].clientX;
             mouse.y = e.touches[0].clientY;
         }, { passive: false });
 
-        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-        // Важливо: переініціалізація при зміні розміру вікна
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
         window.addEventListener('resize', init);
 
         init();
         animate();
+
+        // 🎵 АУДІО КОНТРОЛЬ
+        const audio = document.getElementById('bgAudio');
+
+        function startAudio() {
+            audio.play()
+                .then(() => console.log('🎵 Music started'))
+                .catch(e => console.log('Click anywhere to start music'));
+        }
+
+        // Спроба автостарту
+        startAudio();
+
+        // Запуск після першої взаємодії
+        ['click', 'touchstart'].forEach(event => {
+            document.addEventListener(event, startAudio, { once: true });
+        });
     </script>
 </body>
 
