@@ -34,27 +34,52 @@
         }
 
         .ui button {
-            font-size: 16px;
-            pointer-events: auto;
-            /* Робить кнопку клікабельною */
-            margin-top: 10px;
-            padding: 10px 40px;
-            cursor: pointer;
-        }
+    font-size: 16px;
+    pointer-events: auto;
+    margin-top: 10px;
+    padding: 10px 40px;
+    cursor: pointer;
+    
+    /* Прозора кнопка */
+    background-color: transparent;
+    color: white;
+    transition: background-color 0.3s ease; /* Плавний перехід */
+}
+
+.ui button:hover {
+    background-color: rgba(255, 255, 255, 0.2); /* 20% прозорості білого */
+}
 
         .p {
             word-spacing: 20px;
         }
 
+        .link-text {
+            color: white;
+        }
+
+        .link-text:visited {
+            color: white;
+        }
+        .bac-img {
+
+            background-image: url("grain-natural-noise-pain-technology-texture.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center top;
+
+
+            }
+        
         @media (max-width: 768px) {
             .ui {
-                font-size: 60px;
+                font-size: 40px;
                 /* У 3 рази більше (16 * 3) */
-                padding: 40px;
+                padding: 30px;
             }
 
             .ui button {
-                font-size: 60px;
+                font-size: 40px;
                 /* Велику кнопку легше натиснути пальцем */
                 padding: 20px 40px;
                 border-radius: 15px;
@@ -63,16 +88,29 @@
             .ui p {
                 font-size: 60px;
             }
+
+            .bac-img {
+
+            background-image: url("grain-natural-noise-pain-technology-texture.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center top;
+
+
+            }
         }
     </style>
 </head>
 
-<body>
-
+<body class="bac-img">
+<audio autoplay loop>
+    <source src="utro-2.mp3" type="audio/mpeg">
+    
+</audio>
     <div class="ui">
         <h1>______elija______</h1>
         <p class="p">no longer quiet</p>
-        <button><a href="https://elija.bandcamp.com">___wav___</a></button>
+        <button><a class="link-text" href="https://elija.bandcamp.com">_____wav_____</a></button>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -223,7 +261,7 @@
                 points.forEach(p => p.update());
             }
             ctx.beginPath();
-            ctx.strokeStyle = "rgba(200, 200, 200, 0.3)";
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
             constraints.forEach(c => {
                 if (c.active) {
                     ctx.moveTo(c.p1.x, c.p1.y);
