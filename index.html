@@ -142,66 +142,79 @@
         }
 
         function init() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
 
-            const isMobile = window.innerWidth < 768;
-            const currentSpacing = isMobile ? 35 : 25;
-            settings.spacing = currentSpacing;
-            settings.mouseRadius = isMobile ? 60 : 40;
+                const isMobile = window.innerWidth < 768;
 
-            points = [];
-            constraints = [];
+                // Налаштування відстані та радіусу миші
+                const currentSpacing = isMobile ? 35 : 25;
+                settings.spacing = currentSpacing;
+                settings.mouseRadius = isMobile ? 60 : 40;
 
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
+                points = [];
+                constraints = [];
 
-            // Кількість променів та кіл
-            const rays = isMobile ? 20 : 26;
-            const circles = isMobile ? 30 : 40;
+                // Центр по горизонталі завжди посередині
+                const centerX = canvas.width / 2;
 
-            // 1. Створюємо центральну точку (фіксована)
-            const centerPoint = new Point(centerX, centerY, true);
-            points.push(centerPoint);
+                // ЦЕНТР ПО ВЕРТИКАЛІ: 
+                // Якщо мобільний — піднімаємо на 35% висоти екрана, інакше — 50% (центр)
+                const centerY = isMobile ? canvas.height * 0.35 : canvas.height * 0.5;
 
-            // 2. Створюємо точки променями
-            // Спочатку створюємо ВСІ точки, а потім з'єднаємо їх
-            for (let i = 1; i <= circles; i++) {
-                let radius = i * settings.spacing;
-                for (let j = 0; j < rays; j++) {
-                    let angle = (j / rays) * Math.PI * 2;
-                    let x = centerX + Math.cos(angle) * radius;
-                    let y = centerY + Math.sin(angle) * radius;
+                // Кількість променів
+                const rays = isMobile ? 20 : 26;
 
-                    // Закріплюємо тільки останнє коло (краї)
-                    let isOuterEdge = (i === circles);
-                    points.push(new Point(x, y, isOuterEdge));
+                // Автоматичний розрахунок кількості кіл, щоб покрити весь екран
+                // (беремо найбільшу відстань від центру до кута екрана)
+                const maxDist = Math.max(
+                    centerY,
+                    canvas.height - centerY,
+                    centerX,
+                    canvas.width - centerX
+                ) * 1.5; // +50% запасу для натягу
+                const circles = Math.ceil(maxDist / settings.spacing);
+
+                // 1. Створюємо центральну точку (фіксована)
+                const centerPoint = new Point(centerX, centerY, true);
+                points.push(centerPoint);
+
+                // 2. Створюємо точки променями
+                for (let i = 1; i <= circles; i++) {
+                    let radius = i * settings.spacing;
+                    for (let j = 0; j < rays; j++) {
+                        let angle = (j / rays) * Math.PI * 2;
+                        let x = centerX + Math.cos(angle) * radius;
+                        let y = centerY + Math.sin(angle) * radius;
+
+                        // Закріплюємо тільки останнє коло (краї за межами екрана)
+                        let isOuterEdge = (i === circles);
+                        points.push(new Point(x, y, isOuterEdge));
+                    }
                 }
-            }
 
-            // 3. Створюємо зв'язки (Constraints)
-            for (let i = 1; i <= circles; i++) {
-                for (let j = 0; j < rays; j++) {
-                    // Поточна точка
-                    let currentIndex = 1 + (i - 1) * rays + j;
-                    let currentP = points[currentIndex];
+                // 3. Створюємо зв'язки (Constraints)
+                for (let i = 1; i <= circles; i++) {
+                    for (let j = 0; j < rays; j++) {
+                        let currentIndex = 1 + (i - 1) * rays + j;
+                        let currentP = points[currentIndex];
 
-                    // 1. З'єднуємо по колу (горизонтальні нитки)
-                    let nextInCircle = 1 + (i - 1) * rays + ((j + 1) % rays);
-                    constraints.push(new Constraint(currentP, points[nextInCircle]));
+                        // 1. З'єднуємо по колу (спіральні нитки)
+                        let nextInCircle = 1 + (i - 1) * rays + ((j + 1) % rays);
+                        constraints.push(new Constraint(currentP, points[nextInCircle]));
 
-                    // 2. З'єднуємо радіально (промені до центру)
-                    if (i === 1) {
-                        // Перше коло з'єднуємо з центром
-                        constraints.push(new Constraint(currentP, centerPoint));
-                    } else {
-                        // Наступні кола з'єднуємо з точкою на попередньому колі під тим самим кутом
-                        let prevInRay = 1 + (i - 2) * rays + j;
-                        constraints.push(new Constraint(currentP, points[prevInRay]));
+                        // 2. З'єднуємо радіально (промені)
+                        if (i === 1) {
+                            // Перше коло до центру
+                            constraints.push(new Constraint(currentP, centerPoint));
+                        } else {
+                            // Наступні кола до точок всередині
+                            let prevInRay = 1 + (i - 2) * rays + j;
+                            constraints.push(new Constraint(currentP, points[prevInRay]));
+                        }
                     }
                 }
             }
-        }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
