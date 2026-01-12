@@ -47,20 +47,23 @@
         }
 
         @media (max-width: 768px) {
-    .ui {
-        font-size: 60px; /* У 3 рази більше (16 * 3) */
-        padding: 40px;
-    }
-    .ui button {
-        font-size: 60px; /* Велику кнопку легше натиснути пальцем */
-        padding: 20px 40px;
-        border-radius: 15px;
-    }
-    .ui p {
-        font-size: 60px;
-    }
-}        
+            .ui {
+                font-size: 60px;
+                /* У 3 рази більше (16 * 3) */
+                padding: 40px;
+            }
 
+            .ui button {
+                font-size: 60px;
+                /* Велику кнопку легше натиснути пальцем */
+                padding: 20px 40px;
+                border-radius: 15px;
+            }
+
+            .ui p {
+                font-size: 60px;
+            }
+        }
     </style>
 </head>
 
@@ -83,7 +86,7 @@
         let mouse = { x: 0, y: 0, oldX: 0, oldY: 0 };
 
         const settings = {
-            gravity: 0.25,
+            gravity: 0.0,
             friction: 0.82,
             spacing: 13,      // Відстань між точками
             tearDistance: 115, // Міцність
@@ -142,34 +145,60 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            // Перевірка на мобільний пристрій
             const isMobile = window.innerWidth < 768;
-            // На мобілці відстань між точками 40, на десктопі 20
-            const currentSpacing = isMobile ? 25 : 20;
-            
-            // Збільшуємо радіус впливу для пальця, бо він менш точний за мишку
-            settings.mouseRadius = isMobile ? 50 : 40;
-            
-            // sdfghjgftderfrgthyjhygtfdersfrtghyjsdfghjgftderfrgthyjhygtfdersfrtghyj
-
-            const lengthMultiplier = isMobile ? 0.96 : 0.80;
-
-
+            const currentSpacing = isMobile ? 35 : 25;
             settings.spacing = currentSpacing;
-
-            // Динамічний розрахунок сітки
-            cols = Math.floor(canvas.width / settings.spacing);
-            rows = Math.floor((canvas.height * lengthMultiplier) / settings.spacing); // 60% висоти екрана
+            settings.mouseRadius = isMobile ? 60 : 40;
 
             points = [];
             constraints = [];
 
-            for (let y = 0; y <= rows; y++) {
-                for (let x = 0; x <= cols; x++) {
-                    let p = new Point(x * settings.spacing, y * settings.spacing, y === 0);
-                    points.push(p);
-                    if (x > 0) constraints.push(new Constraint(points[points.length - 2], p));
-                    if (y > 0) constraints.push(new Constraint(points[points.length - (cols + 2)], p));
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // Кількість променів та кіл
+            const rays = isMobile ? 20 : 26;
+            const circles = isMobile ? 30 : 40;
+
+            // 1. Створюємо центральну точку (фіксована)
+            const centerPoint = new Point(centerX, centerY, true);
+            points.push(centerPoint);
+
+            // 2. Створюємо точки променями
+            // Спочатку створюємо ВСІ точки, а потім з'єднаємо їх
+            for (let i = 1; i <= circles; i++) {
+                let radius = i * settings.spacing;
+                for (let j = 0; j < rays; j++) {
+                    let angle = (j / rays) * Math.PI * 2;
+                    let x = centerX + Math.cos(angle) * radius;
+                    let y = centerY + Math.sin(angle) * radius;
+
+                    // Закріплюємо тільки останнє коло (краї)
+                    let isOuterEdge = (i === circles);
+                    points.push(new Point(x, y, isOuterEdge));
+                }
+            }
+
+            // 3. Створюємо зв'язки (Constraints)
+            for (let i = 1; i <= circles; i++) {
+                for (let j = 0; j < rays; j++) {
+                    // Поточна точка
+                    let currentIndex = 1 + (i - 1) * rays + j;
+                    let currentP = points[currentIndex];
+
+                    // 1. З'єднуємо по колу (горизонтальні нитки)
+                    let nextInCircle = 1 + (i - 1) * rays + ((j + 1) % rays);
+                    constraints.push(new Constraint(currentP, points[nextInCircle]));
+
+                    // 2. З'єднуємо радіально (промені до центру)
+                    if (i === 1) {
+                        // Перше коло з'єднуємо з центром
+                        constraints.push(new Constraint(currentP, centerPoint));
+                    } else {
+                        // Наступні кола з'єднуємо з точкою на попередньому колі під тим самим кутом
+                        let prevInRay = 1 + (i - 2) * rays + j;
+                        constraints.push(new Constraint(currentP, points[prevInRay]));
+                    }
                 }
             }
         }
@@ -181,7 +210,7 @@
                 points.forEach(p => p.update());
             }
             ctx.beginPath();
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+            ctx.strokeStyle = "rgba(200, 200, 200, 0.3)";
             constraints.forEach(c => {
                 if (c.active) {
                     ctx.moveTo(c.p1.x, c.p1.y);
@@ -195,17 +224,17 @@
         }
 
         window.addEventListener('touchstart', e => {
-                mouse.x = e.touches[0].clientX;
-                mouse.y = e.touches[0].clientY;
-                mouse.oldX = mouse.x;
-                mouse.oldY = mouse.y;
-            }, { passive: false });
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+            mouse.oldX = mouse.x;
+            mouse.oldY = mouse.y;
+        }, { passive: false });
 
-            window.addEventListener('touchmove', e => {
-                e.preventDefault(); // можна розкоментувати, щоб сторінка не скролилась, коли рухаєте тканину
-                mouse.x = e.touches[0].clientX;
-                mouse.y = e.touches[0].clientY;
-            }, { passive: false });
+        window.addEventListener('touchmove', e => {
+            e.preventDefault(); // можна розкоментувати, щоб сторінка не скролилась, коли рухаєте тканину
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+        }, { passive: false });
 
         window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
         // Важливо: переініціалізація при зміні розміру вікна
