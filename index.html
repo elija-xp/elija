@@ -77,6 +77,13 @@
         .p {
             word-spacing: 20px;
         }
+        /**
+        height, min-height, max-height 
+        orientation: portrait, landscape
+        resolution, min-resolution,
+        max-resolution: 300dpi 
+        width, min-width, max-width 
+        **/
 
         @media (max-width: 768px) {
             .ui {
@@ -123,7 +130,7 @@
         let mouse = { x: 0, y: 0, oldX: 0, oldY: 0 };
 
         const settings = {
-            gravity: 0.0,
+            gravity: 0.01,
             friction: 0.82,
             spacing: 13,
             tearDistance: 115,
@@ -170,8 +177,8 @@
                 let dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist > settings.tearDistance) { this.active = false; return; }
                 let diff = (this.length - dist) / dist * settings.stiffness;
-                let ox = dx * diff * 0.5;
-                let oy = dy * diff * 0.5;
+                let ox = dx * diff * 0.6;
+                let oy = dy * diff * 0.6;
                 if (!this.p1.pinned) { this.p1.x -= ox; this.p1.y -= oy; }
                 if (!this.p2.pinned) { this.p2.x += ox; this.p2.y += oy; }
             }
@@ -192,7 +199,7 @@
 
             const centerX = canvas.width / 2;
             const centerY = isMobile ? canvas.height * 0.35 : canvas.height * 0.5;
-            const rays = isMobile ? 20 : 26;
+            const rays = isMobile ? 20 : 50;
 
             const maxDist = Math.max(
                 centerY,
