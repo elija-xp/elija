@@ -2,7 +2,7 @@
 <html lang="uk">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
     <title>Responsive Fabric</title>
     <style>
         body {
@@ -199,7 +199,7 @@
 
             const centerX = canvas.width / 2;
             const centerY = isMobile ? canvas.height * 0.35 : canvas.height * 0.5;
-            const rays = isMobile ? 20 : 50;
+            const rays = isMobile ? 20 : 40;
 
             const maxDist = Math.max(
                 centerY,
